@@ -25,14 +25,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.praktichna_robota_2_var_19.ui.theme.Praktichna_robota_2_var_19Theme
 
 class MainActivity : ComponentActivity() {
@@ -51,53 +52,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun JobListScreen() {
-
-    val jobs = listOf(
-        Job(
-            101, "Android Developer", "TechCorp", "Kyiv",
-            3500.0, listOf("Kotlin", "Android"), JobStatus.OPEN
-        ),
-        Job(
-            102, "Junior QA Engineer", "BugHunters", "Remote",
-            2500.0, listOf("Manual", "Jira"), JobStatus.OPEN
-        ),
-        Job(
-            103, "Product Manager", "InnoGroup", "Kyiv",
-            4500.0, listOf("Agile", "Management"), JobStatus.CLOSED
-        ),
-        Job(
-            104, "Senior Android Dev", "MobileFirst", "Remote",
-            5500.0, listOf("Kotlin", "Compose"), JobStatus.URGENT
-        ),
-        Job(
-            105, "UI/UX Designer", "DesignHub", "Odesa",
-            2000.0, listOf("Figma", "UX"), JobStatus.OPEN
-        ),
-        Job(
-            106, "DevOps Engineer", "CloudScale", "Kyiv",
-            4800.0, listOf("Docker", "Kubernetes"), JobStatus.OPEN
-        ),
-        Job(
-            107, "Java Developer", "SoftLine", "Lviv",
-            4000.0, listOf("Java", "Spring"), JobStatus.URGENT
-        ),
-        Job(
-            108, "Frontend Developer", "WebStudio", "Remote",
-            3200.0, listOf("HTML", "CSS", "React"), JobStatus.CLOSED
-        )
-    )
-
-    val searchText = remember {
-        mutableStateOf("")
-    }
-
+fun JobListScreen(
+    viewModel: ListViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    val filteredJobs = jobs.filter { job ->
-        job.title.contains(searchText.value, ignoreCase = true) ||
-                job.company.contains(searchText.value, ignoreCase = true) ||
-                job.location.contains(searchText.value, ignoreCase = true)
+    val filteredJobs = uiState.jobs.filter { job ->
+        job.title.contains(uiState.searchText, ignoreCase = true) ||
+                job.company.contains(uiState.searchText, ignoreCase = true) ||
+                job.location.contains(uiState.searchText, ignoreCase = true)
     }
 
     Scaffold(
@@ -129,9 +93,9 @@ fun JobListScreen() {
             Spacer(modifier = Modifier.height(20.dp))
 
             OutlinedTextField(
-                value = searchText.value,
-                onValueChange = {
-                    searchText.value = it
+                value = uiState.searchText,
+                onValueChange = { text ->
+                    viewModel.onSearchTextChange(text)
                 },
                 label = {
                     Text("Назва вакансії, компанія або місто")
