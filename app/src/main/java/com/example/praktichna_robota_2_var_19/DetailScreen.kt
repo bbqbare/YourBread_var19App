@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.praktichna_robota_2_var_19.domain.model.Job
+import com.example.praktichna_robota_2_var_19.domain.model.JobStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
