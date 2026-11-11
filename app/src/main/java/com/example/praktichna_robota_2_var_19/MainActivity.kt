@@ -1,7 +1,6 @@
 package com.example.praktichna_robota_2_var_19
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -28,12 +27,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.praktichna_robota_2_var_19.ui.theme.Praktichna_robota_2_var_19Theme
 
 class MainActivity : ComponentActivity() {
@@ -45,7 +42,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Praktichna_robota_2_var_19Theme {
-                JobListScreen()
+                JobNavigation()
             }
         }
     }
@@ -53,11 +50,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun JobListScreen(
-    viewModel: ListViewModel = viewModel()
+    viewModel: ListViewModel,
+    onJobClick: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-
     val filteredJobs = uiState.jobs.filter { job ->
         job.title.contains(uiState.searchText, ignoreCase = true) ||
                 job.company.contains(uiState.searchText, ignoreCase = true) ||
@@ -211,12 +207,7 @@ fun JobListScreen(
                             ) {
                                 Button(
                                     onClick = {
-                                        Toast.makeText(
-                                            context,
-                                            "${job.title} - ${job.company}\n" +
-                                                    "Зарплата: $${job.salary.toInt()}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        onJobClick(job.id)
                                     }
                                 ) {
                                     Text("Детальніше")

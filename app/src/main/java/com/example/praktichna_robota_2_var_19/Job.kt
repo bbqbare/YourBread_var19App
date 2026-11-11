@@ -18,5 +18,9 @@ data class Job(
     val location: String,
     val salary: Double,
     val tags: List<String>,
-    val status: JobStatus
+    val status: JobStatus,
+    val description: String = "",
+    val experience: String = "",
+    val employmentType: String = "",
+    val requirements: List<String> = emptyList()
 )
