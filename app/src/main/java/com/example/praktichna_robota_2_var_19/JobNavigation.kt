@@ -1,4 +1,3 @@
-
 package com.example.praktichna_robota_2_var_19
 
 import androidx.compose.runtime.Composable
@@ -16,6 +15,7 @@ import androidx.navigation.navArgument
 fun JobNavigation() {
 
     val navController = rememberNavController()
+
     val listViewModel: ListViewModel = viewModel()
 
     NavHost(
@@ -24,6 +24,7 @@ fun JobNavigation() {
     ) {
 
         composable("list") {
+
             JobListScreen(
                 viewModel = listViewModel,
                 onJobClick = { id ->
@@ -50,13 +51,16 @@ fun JobNavigation() {
             }
 
             if (selectedJob != null) {
+
                 DetailScreen(
                     job = selectedJob,
                     onBack = {
                         navController.popBackStack()
                     }
                 )
+
             } else {
+
                 Text("Вакансію не знайдено")
             }
         }
