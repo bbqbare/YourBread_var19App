@@ -1,4 +1,4 @@
-package com.example.praktichna_robota_2_var_19
+package com.example.praktichna_robota_2_var_19.domain.model
 
 enum class JobStatus {
     OPEN,

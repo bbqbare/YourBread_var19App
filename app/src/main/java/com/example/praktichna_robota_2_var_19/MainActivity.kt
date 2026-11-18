@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.praktichna_robota_2_var_19.domain.model.JobStatus
 import com.example.praktichna_robota_2_var_19.ui.theme.Praktichna_robota_2_var_19Theme
 
 class MainActivity : ComponentActivity() {
