@@ -19,11 +19,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -109,7 +111,13 @@ fun JobListScreen(
                 color = Color.Gray
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Дані зберігаються локально",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = uiState.searchText,
@@ -133,6 +141,51 @@ fun JobListScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            if (uiState.errorMessage != null) {
+
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            text = uiState.errorMessage ?: "",
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            fontSize = 13.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        TextButton(
+                            onClick = {
+                                viewModel.refreshJobs()
+                            },
+                            enabled = !uiState.isLoading
+                        ) {
+                            Text("Повторити")
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            if (uiState.isLoading && uiState.jobs.isNotEmpty()) {
+
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -143,7 +196,9 @@ fun JobListScreen(
 
                     item {
 
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(20.dp)
+                        )
                     }
                 }
 
@@ -267,7 +322,11 @@ fun JobListScreen(
                     item {
 
                         Text(
-                            text = "Вакансій не знайдено. Перевірте інтернет-з'єднання.",
+                            text = if (uiState.errorMessage != null) {
+                                "Збережених вакансій поки немає."
+                            } else {
+                                "Вакансій не знайдено."
+                            },
                             fontSize = 16.sp,
                             color = Color.Gray,
                             modifier = Modifier

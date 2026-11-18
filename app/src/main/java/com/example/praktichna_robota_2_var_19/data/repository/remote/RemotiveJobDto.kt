@@ -1,13 +1,15 @@
-package com.example.praktichna_robota_2_var_19.data.remote
+package com.example.praktichna_robota_2_var_19.data.repository.remote
 
 import com.google.gson.annotations.SerializedName
 
 data class RemotiveResponseDto(
+
     @SerializedName("jobs")
     val jobs: List<RemotiveJobDto>? = null
 )
 
 data class RemotiveJobDto(
+
     @SerializedName("id")
     val id: Int? = null,
 
