@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -25,6 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -54,11 +56,23 @@ fun JobListScreen(
     viewModel: ListViewModel,
     onJobClick: (Int) -> Unit
 ) {
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val filteredJobs = uiState.jobs.filter { job ->
-        job.title.contains(uiState.searchText, ignoreCase = true) ||
-                job.company.contains(uiState.searchText, ignoreCase = true) ||
-                job.location.contains(uiState.searchText, ignoreCase = true)
+
+        job.title.contains(
+            uiState.searchText,
+            ignoreCase = true
+        ) ||
+                job.company.contains(
+                    uiState.searchText,
+                    ignoreCase = true
+                ) ||
+                job.location.contains(
+                    uiState.searchText,
+                    ignoreCase = true
+                )
     }
 
     Scaffold(
@@ -84,6 +98,14 @@ fun JobListScreen(
             Text(
                 text = "Знайди вакансію, яка тобі підходить",
                 fontSize = 14.sp,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Джерело вакансій: Remotive",
+                fontSize = 12.sp,
                 color = Color.Gray
             )
 
@@ -113,8 +135,17 @@ fun JobListScreen(
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                if (uiState.isLoading && uiState.jobs.isEmpty()) {
+
+                    item {
+
+                        CircularProgressIndicator()
+                    }
+                }
 
                 items(
                     items = filteredJobs,
@@ -122,14 +153,20 @@ fun JobListScreen(
                 ) { job ->
 
                     val statusText = when (job.status) {
+
                         JobStatus.OPEN -> "Відкрита"
+
                         JobStatus.URGENT -> "Термінова"
+
                         JobStatus.CLOSED -> "Закрита"
                     }
 
                     val statusColor = when (job.status) {
+
                         JobStatus.OPEN -> Color(0xFF2E7D32)
+
                         JobStatus.URGENT -> Color(0xFFE65100)
+
                         JobStatus.CLOSED -> Color(0xFF757575)
                     }
 
@@ -169,7 +206,11 @@ fun JobListScreen(
                             )
 
                             Text(
-                                text = "Зарплата: $${job.salary.toInt()} / місяць",
+                                text = if (job.salary > 0) {
+                                    "Заробітна плата: приблизно $${job.salary.toInt()} на місяць"
+                                } else {
+                                    "Заробітна плата: не вказана"
+                                },
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -180,6 +221,7 @@ fun JobListScreen(
                                 color = statusColor.copy(alpha = 0.12f),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
+
                                 Text(
                                     text = statusText,
                                     color = statusColor,
@@ -206,11 +248,13 @@ fun JobListScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
                             ) {
+
                                 Button(
                                     onClick = {
                                         onJobClick(job.id)
                                     }
                                 ) {
+
                                     Text("Детальніше")
                                 }
                             }
@@ -218,10 +262,12 @@ fun JobListScreen(
                     }
                 }
 
-                if (filteredJobs.isEmpty()) {
+                if (filteredJobs.isEmpty() && !uiState.isLoading) {
+
                     item {
+
                         Text(
-                            text = "Вакансій не знайдено",
+                            text = "Вакансій не знайдено. Перевірте інтернет-з'єднання.",
                             fontSize = 16.sp,
                             color = Color.Gray,
                             modifier = Modifier

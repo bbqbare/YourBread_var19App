@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -16,6 +17,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,13 +30,18 @@ fun DetailScreen(
     job: Job,
     onBack: () -> Unit
 ) {
+
+    val uriHandler = LocalUriHandler.current
+
     Scaffold(
         topBar = {
+
             TopAppBar(
                 title = {
-                    Text("Деталі вакансії")
+                    Text("Детальна інформація")
                 },
                 navigationIcon = {
+
                     TextButton(onClick = onBack) {
                         Text("Назад")
                     }
@@ -49,6 +56,7 @@ fun DetailScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
+
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
@@ -72,7 +80,11 @@ fun DetailScreen(
             )
 
             Text(
-                text = "Зарплата: $${job.salary.toInt()} / місяць",
+                text = if (job.salary > 0) {
+                    "Заробітна плата: приблизно $${job.salary.toInt()} на місяць"
+                } else {
+                    "Заробітна плата: не вказана"
+                },
                 fontSize = 16.sp
             )
 
@@ -134,10 +146,30 @@ fun DetailScreen(
             )
 
             job.requirements.forEach { requirement ->
+
                 Text(
                     text = "• $requirement",
                     fontSize = 15.sp
                 )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Джерело вакансій: Remotive",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            if (job.sourceUrl.isNotBlank()) {
+
+                Button(
+                    onClick = {
+                        uriHandler.openUri(job.sourceUrl)
+                    }
+                ) {
+                    Text("Відкрити оригінальне оголошення")
+                }
             }
         }
     }
