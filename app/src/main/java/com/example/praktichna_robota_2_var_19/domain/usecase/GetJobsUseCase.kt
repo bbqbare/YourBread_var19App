@@ -8,6 +8,7 @@ class GetJobsUseCase(
 ) {
 
     suspend operator fun invoke(): List<Job> {
+
         return repository.getJobs()
     }
 }

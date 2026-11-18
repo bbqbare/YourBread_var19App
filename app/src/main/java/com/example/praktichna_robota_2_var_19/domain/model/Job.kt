@@ -7,8 +7,14 @@ enum class JobStatus {
 }
 
 sealed class Result<out T> {
-    data class Success<T>(val data: T) : Result<T>()
-    data class Error(val message: String) : Result<Nothing>()
+
+    data class Success<T>(
+        val data: T
+    ) : Result<T>()
+
+    data class Error(
+        val message: String
+    ) : Result<Nothing>()
 }
 
 data class Job(
@@ -22,5 +28,6 @@ data class Job(
     val description: String = "",
     val experience: String = "",
     val employmentType: String = "",
-    val requirements: List<String> = emptyList()
+    val requirements: List<String> = emptyList(),
+    val sourceUrl: String = ""
 )

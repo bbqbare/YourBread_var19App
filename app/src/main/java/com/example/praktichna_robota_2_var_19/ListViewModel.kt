@@ -22,7 +22,9 @@ class ListViewModel(
     }
 
     private fun loadJobs() {
+
         viewModelScope.launch {
+
             _uiState.value = _uiState.value.copy(
                 isLoading = true
             )
@@ -37,6 +39,7 @@ class ListViewModel(
     }
 
     fun onSearchTextChange(text: String) {
+
         _uiState.value = _uiState.value.copy(
             searchText = text
         )
