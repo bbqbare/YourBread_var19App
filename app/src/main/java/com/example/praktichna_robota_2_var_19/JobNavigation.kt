@@ -2,6 +2,8 @@ package com.example.praktichna_robota_2_var_19
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Text
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,7 +18,15 @@ fun JobNavigation() {
 
     val navController = rememberNavController()
 
-    val listViewModel: ListViewModel = viewModel()
+    val context = LocalContext.current.applicationContext
+
+    val factory = remember(context) {
+        ListViewModelFactory(context)
+    }
+
+    val listViewModel: ListViewModel = viewModel(
+        factory = factory
+    )
 
     NavHost(
         navController = navController,

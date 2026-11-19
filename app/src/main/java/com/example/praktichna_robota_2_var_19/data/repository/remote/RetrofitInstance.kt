@@ -1,4 +1,4 @@
-package com.example.praktichna_robota_2_var_19.data.remote
+package com.example.praktichna_robota_2_var_19.data.repository.remote
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

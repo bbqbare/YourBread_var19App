@@ -1,25 +1,59 @@
 package com.example.praktichna_robota_2_var_19.data.repository
 
-import android.text.Html
 import android.util.Log
-import com.example.praktichna_robota_2_var_19.data.remote.RemotiveJobDto
-import com.example.praktichna_robota_2_var_19.data.remote.RetrofitInstance
+import androidx.room.withTransaction
+import com.example.praktichna_robota_2_var_19.data.local.AppDatabase
+import com.example.praktichna_robota_2_var_19.data.mapper.toDomain
+import com.example.praktichna_robota_2_var_19.data.mapper.toEntity
+import com.example.praktichna_robota_2_var_19.data.repository.remote.JobApiService
 import com.example.praktichna_robota_2_var_19.domain.model.Job
-import com.example.praktichna_robota_2_var_19.domain.model.JobStatus
+import com.example.praktichna_robota_2_var_19.domain.model.Result
 import com.example.praktichna_robota_2_var_19.domain.repository.JobRepository
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import java.io.IOException
 
-class JobRepositoryImpl : JobRepository {
+class JobRepositoryImpl(
+    private val api: JobApiService,
+    private val database: AppDatabase
+) : JobRepository {
 
-    override suspend fun getJobs(): List<Job> {
+    private val jobDao = database.jobDao()
+
+    override fun observeJobs(): Flow<List<Job>> {
+
+        return jobDao.getAll().map { entities ->
+
+            entities.map { entity ->
+                entity.toDomain()
+            }
+        }
+    }
+
+    override suspend fun refresh(): Result<Unit> {
 
         return try {
 
-            val response = RetrofitInstance.api.getJobs()
+            val response = api.getJobs()
 
-            response.jobs.orEmpty().mapNotNull { dto ->
-                dto.toDomain()
+            val remoteJobs = response.jobs
+                ?: throw IOException("Сервер не повернув список вакансій")
+
+            val localJobs = remoteJobs.mapNotNull { dto ->
+                dto.toEntity()
             }
+
+            database.withTransaction {
+
+                jobDao.deleteAll()
+
+                if (localJobs.isNotEmpty()) {
+                    jobDao.insertAll(localJobs)
+                }
+            }
+
+            Result.Success(Unit)
 
         } catch (e: CancellationException) {
 
@@ -29,125 +63,13 @@ class JobRepositoryImpl : JobRepository {
 
             Log.e(
                 "JobRepository",
-                "Не вдалося завантажити вакансії",
+                "Помилка синхронізації вакансій",
                 e
             )
 
-            emptyList()
+            Result.Error(
+                "Немає з'єднання. Показано збережені дані."
+            )
         }
-    }
-}
-
-private fun RemotiveJobDto.toDomain(): Job? {
-
-    val jobId = id ?: return null
-
-    val jobTags = tags.orEmpty()
-
-    val cleanDescription = Html.fromHtml(
-        description.orEmpty(),
-        Html.FROM_HTML_MODE_COMPACT
-    ).toString().trim()
-
-    return Job(
-        id = jobId,
-
-        title = title
-            ?.takeIf { it.isNotBlank() }
-            ?: "Назву не вказано",
-
-        company = companyName
-            ?.takeIf { it.isNotBlank() }
-            ?: "Компанію не вказано",
-
-        location = location
-            ?.takeIf { it.isNotBlank() }
-            ?: "Віддалена робота",
-
-        salary = parseMonthlySalary(salary),
-
-        tags = jobTags,
-
-        status = JobStatus.OPEN,
-
-        description = cleanDescription,
-
-        experience = "Не вказано в оголошенні",
-
-        employmentType = formatEmploymentType(jobType),
-
-        requirements = jobTags.take(5),
-
-        sourceUrl = url.orEmpty()
-    )
-}
-
-private fun formatEmploymentType(type: String?): String {
-
-    return when (type?.lowercase()) {
-
-        "full_time" -> "Повна зайнятість"
-
-        "part_time" -> "Неповна зайнятість"
-
-        "contract" -> "Контракт"
-
-        "freelance" -> "Фриланс"
-
-        "internship" -> "Стажування"
-
-        else -> "Не вказано"
-    }
-}
-
-private fun parseMonthlySalary(value: String?): Double {
-
-    if (value.isNullOrBlank()) {
-        return 0.0
-    }
-
-    val normalized = value.lowercase()
-
-    if (
-        "€" in value ||
-        "eur" in normalized ||
-        "£" in value ||
-        "gbp" in normalized
-    ) {
-        return 0.0
-    }
-
-    val numberText = Regex("""\d[\d,]*(?:\.\d+)?""")
-        .find(value)
-        ?.value
-        ?: return 0.0
-
-    val number = numberText
-        .replace(",", "")
-        .toDoubleOrNull()
-        ?: return 0.0
-
-    val amount = if (
-        Regex("""\d+(?:\.\d+)?\s*k\b""")
-            .containsMatchIn(normalized)
-    ) {
-        number * 1000
-    } else {
-        number
-    }
-
-    return when {
-
-        "hour" in normalized || "/hr" in normalized ->
-            amount * 160
-
-        "month" in normalized || "/mo" in normalized ->
-            amount
-
-        "week" in normalized ->
-            amount * 4.33
-
-        else ->
-            amount / 12
     }
 }

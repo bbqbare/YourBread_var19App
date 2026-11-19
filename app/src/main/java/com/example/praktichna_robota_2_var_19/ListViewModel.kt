@@ -2,15 +2,14 @@ package com.example.praktichna_robota_2_var_19
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.praktichna_robota_2_var_19.data.repository.JobRepositoryImpl
+import com.example.praktichna_robota_2_var_19.domain.model.Result
 import com.example.praktichna_robota_2_var_19.domain.usecase.GetJobsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ListViewModel(
-    private val getJobsUseCase: GetJobsUseCase =
-        GetJobsUseCase(JobRepositoryImpl())
+    private val getJobsUseCase: GetJobsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ListUiState())
@@ -18,23 +17,50 @@ class ListViewModel(
     val uiState = _uiState.asStateFlow()
 
     init {
-        loadJobs()
+        observeJobs()
+        refreshJobs()
     }
 
-    private fun loadJobs() {
+    private fun observeJobs() {
+
+        viewModelScope.launch {
+
+            getJobsUseCase.observeJobs().collect { jobs ->
+
+                _uiState.value = _uiState.value.copy(
+                    jobs = jobs
+                )
+            }
+        }
+    }
+
+    fun refreshJobs() {
 
         viewModelScope.launch {
 
             _uiState.value = _uiState.value.copy(
-                isLoading = true
+                isLoading = true,
+                errorMessage = null
             )
 
-            val jobs = getJobsUseCase()
+            when (val result = getJobsUseCase.refresh()) {
 
-            _uiState.value = _uiState.value.copy(
-                jobs = jobs,
-                isLoading = false
-            )
+                is Result.Success -> {
+
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                }
+
+                is Result.Error -> {
+
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = result.message
+                    )
+                }
+            }
         }
     }
 
