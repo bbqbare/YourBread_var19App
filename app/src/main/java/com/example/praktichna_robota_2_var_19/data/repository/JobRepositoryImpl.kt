@@ -2,10 +2,13 @@ package com.example.praktichna_robota_2_var_19.data.repository
 
 import android.util.Log
 import androidx.room.withTransaction
-import com.example.praktichna_robota_2_var_19.data.local.AppDatabase
-import com.example.praktichna_robota_2_var_19.data.mapper.toDomain
-import com.example.praktichna_robota_2_var_19.data.mapper.toEntity
+import com.example.praktichna_robota_2_var_19.data.repository.local.AppDatabase
+import com.example.praktichna_robota_2_var_19.data.repository.local.JobDao
+import com.example.praktichna_robota_2_var_19.data.repository.local.JobEntity
+import com.example.praktichna_robota_2_var_19.data.repository.mapper.toDomain
+import com.example.praktichna_robota_2_var_19.data.repository.mapper.toEntity
 import com.example.praktichna_robota_2_var_19.data.repository.remote.JobApiService
+import com.example.praktichna_robota_2_var_19.data.repository.remote.RemotiveJobDto
 import com.example.praktichna_robota_2_var_19.domain.model.Job
 import com.example.praktichna_robota_2_var_19.domain.model.Result
 import com.example.praktichna_robota_2_var_19.domain.repository.JobRepository
@@ -16,14 +19,13 @@ import java.io.IOException
 
 class JobRepositoryImpl(
     private val api: JobApiService,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    private val jobDao: JobDao
 ) : JobRepository {
-
-    private val jobDao = database.jobDao()
 
     override fun observeJobs(): Flow<List<Job>> {
 
-        return jobDao.getAll().map { entities ->
+        return jobDao.getAll().map { entities: List<JobEntity> ->
 
             entities.map { entity ->
                 entity.toDomain()
@@ -37,10 +39,11 @@ class JobRepositoryImpl(
 
             val response = api.getJobs()
 
-            val remoteJobs = response.jobs
-                ?: throw IOException("Сервер не повернув список вакансій")
+            val remoteJobs: List<RemotiveJobDto> =
+                response.jobs
+                    ?: throw IOException("Сервер не повернув список вакансій")
 
-            val localJobs = remoteJobs.mapNotNull { dto ->
+            val localJobs: List<JobEntity> = remoteJobs.mapNotNull { dto ->
                 dto.toEntity()
             }
 
