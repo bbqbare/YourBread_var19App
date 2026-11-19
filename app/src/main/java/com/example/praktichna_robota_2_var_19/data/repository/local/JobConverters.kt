@@ -1,4 +1,4 @@
-package com.example.praktichna_robota_2_var_19.data.local
+package com.example.praktichna_robota_2_var_19.data.repository.local
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson

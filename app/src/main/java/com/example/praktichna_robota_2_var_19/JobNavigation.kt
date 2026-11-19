@@ -2,31 +2,21 @@ package com.example.praktichna_robota_2_var_19
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Text
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun JobNavigation() {
 
     val navController = rememberNavController()
 
-    val context = LocalContext.current.applicationContext
-
-    val factory = remember(context) {
-        ListViewModelFactory(context)
-    }
-
-    val listViewModel: ListViewModel = viewModel(
-        factory = factory
-    )
+    val listViewModel: ListViewModel = koinViewModel()
 
     NavHost(
         navController = navController,
